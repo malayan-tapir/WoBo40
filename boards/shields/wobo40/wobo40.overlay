@@ -1,19 +1,26 @@
 /*
- * WoBo40 - Seeed XIAO BLE (nRF52840) 用シールド定義
+ * WoBo40 - Seeed XIAO BLE (nRF52840) 用シールド定義 (Charlieplex版)
  *
- * - 4行 x 13列 マトリクス (51キー + 1Uトラックボール)
- * - 列駆動: 74HC595 シフトレジスタ x2 (SPI1)
+ * - 51キー + 1Uトラックボール
+ * - キースキャン: Charlieplex (スキャン8ピン + 割り込み1ピン, シフトレジスタ不要)
  * - トラックボール: PMW3610 (SPI0, 3線SPI: MOSI/MISO同一ピン)
  *
- * ピンアサイン (XIAO Dピン):
- *   D0-D3 : Row0-Row3 (入力)
- *   D4    : PMW3610 SCLK
- *   D5    : PMW3610 SDIO
- *   D6    : PMW3610 nCS
- *   D7    : PMW3610 MOTION (割り込み)
- *   D8    : 74HC595 SRCLK (シフトクロック)
- *   D9    : 74HC595 RCLK  (ラッチ)
- *   D10   : 74HC595 SER   (データ)
+ * ピンアサイン:
+ *   D0  (P0.02) : スキャン0
+ *   D1  (P0.03) : スキャン1
+ *   D2  (P0.28) : スキャン2
+ *   D3  (P0.29) : スキャン3
+ *   D4  (P0.04) : PMW3610 SCLK
+ *   D5  (P0.05) : PMW3610 SDIO
+ *   D6  (P1.11) : PMW3610 nCS
+ *   D7  (P1.12) : PMW3610 MOTION (割り込み)
+ *   D8  (P1.13) : スキャン4
+ *   D9  (P1.14) : スキャン5
+ *   D10 (P1.15) : スキャン6
+ *   NFC1 (P0.09, 裏面パッド) : スキャン7
+ *   NFC2 (P0.10, 裏面パッド) : キースキャン割り込みライン
+ *
+ * NFCピンをGPIOとして使うため CONFIG_NFCT_PINS_AS_GPIOS=y が必要 (wobo40.conf)。
  */
 
 #include <dt-bindings/zmk/matrix_transform.h>
@@ -26,45 +33,37 @@
 	};
 
 	kscan0: kscan {
-		compatible = "zmk,kscan-gpio-matrix";
-		diode-direction = "col2row";
+		compatible = "zmk,kscan-gpio-charlieplex";
 		wakeup-source;
 
-		row-gpios
-			= <&xiao_d 0 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
-			, <&xiao_d 1 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
-			, <&xiao_d 2 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
-			, <&xiao_d 3 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
-			;
+		interrupt-gpios = <&gpio0 10 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>;	/* NFC2 */
 
-		/* C0-C7 = 1個目の595 (QA-QH), C8-C12 = 2個目の595 (QA-QE) */
-		col-gpios
-			= <&shifter 0 GPIO_ACTIVE_HIGH>
-			, <&shifter 1 GPIO_ACTIVE_HIGH>
-			, <&shifter 2 GPIO_ACTIVE_HIGH>
-			, <&shifter 3 GPIO_ACTIVE_HIGH>
-			, <&shifter 4 GPIO_ACTIVE_HIGH>
-			, <&shifter 5 GPIO_ACTIVE_HIGH>
-			, <&shifter 6 GPIO_ACTIVE_HIGH>
-			, <&shifter 7 GPIO_ACTIVE_HIGH>
-			, <&shifter 8 GPIO_ACTIVE_HIGH>
-			, <&shifter 9 GPIO_ACTIVE_HIGH>
-			, <&shifter 10 GPIO_ACTIVE_HIGH>
-			, <&shifter 11 GPIO_ACTIVE_HIGH>
-			, <&shifter 12 GPIO_ACTIVE_HIGH>
+		gpios
+			= <&xiao_d 0 GPIO_ACTIVE_HIGH>	/* idx 0: D0  */
+			, <&xiao_d 1 GPIO_ACTIVE_HIGH>	/* idx 1: D1  */
+			, <&xiao_d 2 GPIO_ACTIVE_HIGH>	/* idx 2: D2  */
+			, <&xiao_d 3 GPIO_ACTIVE_HIGH>	/* idx 3: D3  */
+			, <&xiao_d 8 GPIO_ACTIVE_HIGH>	/* idx 4: D8  */
+			, <&xiao_d 9 GPIO_ACTIVE_HIGH>	/* idx 5: D9  */
+			, <&xiao_d 10 GPIO_ACTIVE_HIGH>	/* idx 6: D10 */
+			, <&gpio0 9 GPIO_ACTIVE_HIGH>	/* idx 7: NFC1 */
 			;
 	};
 
-	/* トラックボール位置 RC(3,8) はキーなしのため除外 */
+	/*
+	 * Charlieplex: RC(行,列) = (駆動ピンidx, 受信ピンidx)。
+	 * 物理配置 (4行x13列, トラックボール位置は除外) をキー順に列挙。
+	 * READMEの結線表と1対1対応 (READMEはこの割当から自動生成)。
+	 */
 	default_transform: keymap_transform0 {
 		compatible = "zmk,matrix-transform";
-		columns = <13>;
-		rows = <4>;
+		columns = <8>;
+		rows = <8>;
 		map = <
-RC(0,0) RC(0,1) RC(0,2) RC(0,3) RC(0,4) RC(0,5) RC(0,6) RC(0,7) RC(0,8) RC(0,9) RC(0,10) RC(0,11) RC(0,12)
-RC(1,0) RC(1,1) RC(1,2) RC(1,3) RC(1,4) RC(1,5) RC(1,6) RC(1,7) RC(1,8) RC(1,9) RC(1,10) RC(1,11) RC(1,12)
-RC(2,0) RC(2,1) RC(2,2) RC(2,3) RC(2,4) RC(2,5) RC(2,6) RC(2,7) RC(2,8) RC(2,9) RC(2,10) RC(2,11) RC(2,12)
-RC(3,0) RC(3,1) RC(3,2) RC(3,3) RC(3,4) RC(3,5) RC(3,6) RC(3,7)         RC(3,9) RC(3,10) RC(3,11) RC(3,12)
+RC(0,1) RC(0,2) RC(0,3) RC(0,4) RC(0,5) RC(0,6) RC(0,7) RC(1,0) RC(1,2) RC(1,3) RC(1,4) RC(1,5) RC(1,6)
+RC(1,7) RC(2,0) RC(2,1) RC(2,3) RC(2,4) RC(2,5) RC(2,6) RC(2,7) RC(3,0) RC(3,1) RC(3,2) RC(3,4) RC(3,5)
+RC(3,6) RC(3,7) RC(4,0) RC(4,1) RC(4,2) RC(4,3) RC(4,5) RC(4,6) RC(4,7) RC(5,0) RC(5,1) RC(5,2) RC(5,3)
+RC(5,4) RC(5,6) RC(5,7) RC(6,0) RC(6,1) RC(6,2) RC(6,3) RC(6,4)         RC(6,5) RC(6,7) RC(7,0) RC(7,1)
 		>;
 	};
 
@@ -166,22 +165,6 @@ RC(3,0) RC(3,1) RC(3,2) RC(3,3) RC(3,4) RC(3,5) RC(3,6) RC(3,7)         RC(3,9) 
 			low-power-enable;
 		};
 	};
-
-	/* SPI1: 74HC595 x2 (MISO 不使用) */
-	spi1_default: spi1_default {
-		group1 {
-			psels = <NRF_PSEL(SPIM_SCK, 1, 13)>,  /* D8  */
-				<NRF_PSEL(SPIM_MOSI, 1, 15)>;     /* D10 */
-		};
-	};
-
-	spi1_sleep: spi1_sleep {
-		group1 {
-			psels = <NRF_PSEL(SPIM_SCK, 1, 13)>,
-				<NRF_PSEL(SPIM_MOSI, 1, 15)>;
-			low-power-enable;
-		};
-	};
 };
 
 &spi0 {
@@ -203,24 +186,5 @@ RC(3,0) RC(3,1) RC(3,2) RC(3,3) RC(3,4) RC(3,5) RC(3,6) RC(3,7)         RC(3,9) 
 		scroll-layers = <2>;
 		/* ボールを動かすと Mouse レイヤーが自動有効化 */
 		automouse-layer = <1>;
-	};
-};
-
-&spi1 {
-	compatible = "nordic,nrf-spim";
-	status = "okay";
-	pinctrl-0 = <&spi1_default>;
-	pinctrl-1 = <&spi1_sleep>;
-	pinctrl-names = "default", "sleep";
-	cs-gpios = <&xiao_d 9 GPIO_ACTIVE_LOW>;
-
-	shifter: shifter@0 {
-		compatible = "zmk,gpio-595";
-		status = "okay";
-		reg = <0>;
-		gpio-controller;
-		spi-max-frequency = <200000>;
-		#gpio-cells = <2>;
-		ngpios = <16>;
 	};
 };
