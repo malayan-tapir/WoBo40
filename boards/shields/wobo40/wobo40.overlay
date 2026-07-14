@@ -5,17 +5,17 @@
  * - キースキャン: 8行x6列マトリクス (行2段重ね方式, IC不要)
  *   物理4行x12列を左右2ブロックに分け、右ブロック(C7-C12)は
  *   行線を別の4本 (電気的な行4-7) にして列線を左ブロックと共用する。
- * - トラックボール: PMW3610 (SPI0, 3線SPI: MOSI/MISO同一ピン)
+ * - トラックボール: PAW3222 (SPI0, 3線SPI: MOSI/MISO同一ピン)
  *
  * ピンアサイン (回路図と一致):
  *   D0  (P0.02) : 電池電圧監視 ADC (AIN0) ※任意, ファーム未使用
  *   D1  (P0.03) : 行0
  *   D2  (P0.28) : 行1
  *   D3  (P0.29) : 行2
- *   D4  (P0.04) : PMW3610 SCLK
- *   D5  (P0.05) : PMW3610 SDIO
- *   D6  (P1.11) : PMW3610 nCS
- *   D7  (P1.12) : PMW3610 MOTION (割り込み)
+ *   D4  (P0.04) : PAW3222 SCLK
+ *   D5  (P0.05) : PAW3222 SDIO
+ *   D6  (P1.11) : PAW3222 nCS
+ *   D7  (P1.12) : PAW3222 MOTION (割り込み)
  *   D8  (P1.13) : 行7
  *   D9  (P1.14) : 列0
  *   D10 (P1.15) : 列1
@@ -36,6 +36,7 @@
 
 #include <dt-bindings/zmk/matrix_transform.h>
 #include <physical_layouts.dtsi>
+#include <input/processors.dtsi>
 
 / {
 	chosen {
@@ -142,9 +143,20 @@ RC(3,0) RC(3,1) RC(3,2) RC(3,3) RC(3,4) RC(3,5) RC(7,0)         RC(7,2) RC(7,3) 
 			;
 	};
 
+	/*
+	 * トラックボールの入力処理 (PAW3222ドライバ自体には機能が無いためZMK標準processorで実装):
+	 *  - 通常: ボールを動かすと Mouse(1) レイヤーを400ms自動有効化
+	 *  - Fn(2) レイヤー押下中: XY移動をスクロールに変換
+	 */
 	trackball_listener {
 		compatible = "zmk,input-listener";
 		device = <&trackball>;
+		input-processors = <&zip_temp_layer 1 400>;	/* 1 = Mouse レイヤー */
+
+		scroller {
+			layers = <2>;				/* 2 = Fn レイヤー */
+			input-processors = <&zip_xy_to_scroll_mapper>;
+		};
 	};
 };
 
@@ -163,7 +175,7 @@ RC(3,0) RC(3,1) RC(3,2) RC(3,3) RC(3,4) RC(3,5) RC(7,0)         RC(7,2) RC(7,3) 
 };
 
 &pinctrl {
-	/* SPI0: PMW3610 (3線SPI: MOSI/MISO を SDIO ピンに束ねる) */
+	/* SPI0: PAW3222 (3線SPI: MOSI/MISO を SDIO ピンに束ねる) */
 	spi0_default: spi0_default {
 		group1 {
 			psels = <NRF_PSEL(SPIM_SCK, 0, 4)>,   /* D4 */
@@ -192,14 +204,10 @@ RC(3,0) RC(3,1) RC(3,2) RC(3,3) RC(3,4) RC(3,5) RC(7,0)         RC(7,2) RC(7,3) 
 
 	trackball: trackball@0 {
 		status = "okay";
-		compatible = "pixart,pmw3610";
+		compatible = "pixart,paw3222";
 		reg = <0>;
 		spi-max-frequency = <2000000>;
-		irq-gpios = <&xiao_d 7 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
-
-		/* fn レイヤーを押している間はスクロール */
-		scroll-layers = <2>;
-		/* ボールを動かすと Mouse レイヤーが自動有効化 */
-		automouse-layer = <1>;
+		irq-gpios = <&xiao_d 7 GPIO_ACTIVE_LOW>;	/* MOTION (アクティブLow) */
+		res-cpi = <800>;				/* 感度 608〜4826, 38刻み */
 	};
 };

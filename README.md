@@ -17,7 +17,7 @@ Plusの裏面パッドを使った **8行×6列マトリクス(行2段重ね方�
 ```
 
 - 47キー (物理4行 × 12列、トラックボール位置はキーなし)
-- `●TB` = 1U トラックボール (PMW3610 センサー)
+- `●TB` = 1U トラックボール (PAW3222 センサー)
 - Bluetooth / USB 両対応、ZMK Studio 対応
 
 ## 部品構成
@@ -25,7 +25,7 @@ Plusの裏面パッドを使った **8行×6列マトリクス(行2段重ね方�
 | 部品 | 個数 | 備考 |
 |---|---|---|
 | Seeed XIAO nRF52840 Plus | 1 | 無印のXIAO nRF52840ではピン不足のため**Plus必須** |
-| PMW3610 トラックボールモジュール | 1 | 1U サイズ、3.3V/SPI 接続のもの |
+| PAW3222 トラックボールモジュール | 1 | 1U サイズ、3.3V/SPI 接続のもの |
 | ダイオード 1N4148 | 47 | キーごとに1本 (COL2ROW) |
 | キースイッチ / キーキャップ | 47 | MX など |
 | リチウムポリマー電池 / 昇圧回路 | 1式 | 電源基板は別途 (下記) |
@@ -67,10 +67,10 @@ Plusの裏面パッドを使った **8行×6列マトリクス(行2段重ね方�
 | D1 | P0.03 | 行0 (左ブロック) |
 | D2 | P0.28 | 行1 (左ブロック) |
 | D3 | P0.29 | 行2 (左ブロック) |
-| D4 | P0.04 | PMW3610 SCLK |
-| D5 | P0.05 | PMW3610 SDIO |
-| D6 | P1.11 | PMW3610 nCS |
-| D7 | P1.12 | PMW3610 MOTION |
+| D4 | P0.04 | PAW3222 SCLK |
+| D5 | P0.05 | PAW3222 SDIO |
+| D6 | P1.11 | PAW3222 nCS |
+| D7 | P1.12 | PAW3222 MOTION |
 | D8 | P1.13 | 行7 (右ブロック) |
 | D9 | P1.14 | 列0 |
 | D10 | P1.15 | 列1 |
@@ -145,27 +145,26 @@ GitHub Actions で自動ビルドされます。
 
 ## トラックボールの調整
 
-`config/wobo40.conf` で調整できます:
+- **感度(CPI)**: `boards/shields/wobo40/wobo40.overlay` の `res-cpi`(範囲 608〜4826、38刻み)
+- **オートマウス/スクロール**: 同 overlay の `trackball_listener` の input processor で定義
+  - `zip_temp_layer 1 400` … ボール移動で Mouse(1) レイヤーを400ms有効化
+  - `scroller { layers = <2>; ... }` … Fn(2) レイヤー中はスクロールに変換
+- **XY/スクロールの反転・入れ替え**: `zip_xy_swap_mapper` や scaler 系 processor を追加して調整
 
-- `CONFIG_PMW3610_CPI` … 感度 (200〜3200)
-- `CONFIG_PMW3610_ORIENTATION_90/180/270` … センサーの実装向きに合わせて回転
-- `CONFIG_PMW3610_INVERT_X/Y` … カーソルの反転
-- `CONFIG_PMW3610_INVERT_SCROLL_X/Y` … スクロール方向の反転 (自然スクロール化)
-- `CONFIG_PMW3610_SCROLL_TICK` … スクロール速度 (大きいほど遅い)
-- `CONFIG_PMW3610_AUTOMOUSE_TIMEOUT_MS` … Mouse レイヤー自動解除までの時間
+PAW3222 ドライバ自体にはスクロール/オートマウス機能が無いため、ZMK標準の input processor で実装しています。
 
-ドライバ: [inorichi/zmk-pmw3610-driver](https://github.com/inorichi/zmk-pmw3610-driver)
+ドライバ: [sekigon-gonnoc/zmk-driver-paw3222](https://github.com/sekigon-gonnoc/zmk-driver-paw3222)
 
 ## ファイル構成
 
 ```
 ├── build.yaml                     # GitHub Actions ビルドマトリクス
 ├── config/
-│   ├── west.yml                   # ZMK v0.3 + PMW3610 ドライバの取得設定
+│   ├── west.yml                   # ZMK v0.3 + PAW3222 ドライバの取得設定
 │   ├── wobo40.keymap              # キーマップ (47キー)
 │   └── wobo40.conf                # 機能設定 (NFCピンGPIO化、トラックボール感度など)
 └── boards/shields/wobo40/
-    ├── wobo40.overlay             # ハード定義 (8x6マトリクス/PMW3610/物理レイアウト)
+    ├── wobo40.overlay             # ハード定義 (8x6マトリクス/PAW3222/物理レイアウト)
     ├── Kconfig.shield
     ├── Kconfig.defconfig
     └── wobo40.zmk.yml
