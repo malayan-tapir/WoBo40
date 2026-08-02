@@ -1,13 +1,17 @@
 /*
  * WoBo40 キーマップ (47キー, Mac / JIS想定)
  *
+ * 物理配列 (4行x12列、4行目9列目がトラックボール):
+ *   Q   W   E   R   T    | Esc Bspc | Y    U     I    O     P
+ *   A   S   D   F   G    | Tab Ent  | H    J     K    L     -
+ *   Z   X   C   V   B    | Sft Sft  | N    M     ,    .     /
+ *   Ctl Opt Cmd SYS 英数 | Spc Spc  | かな [TB]  fn   LClk  RClk
+ *
  * レイヤー構成:
  *   0: Base  - 通常入力
- *   1: Mouse - トラックボールを動かすと自動で有効化 (クリック用)
- *   2: Fn    - fnキー押下中 (数字/ファンクション/記号/ナビ + トラックボールはスクロール)
- *   3: Sys   - 左スペース隣のSYSキー押下中 (Bluetooth/リセット/メディア)
- *
- * 最下段の並び: Ctrl Opt Cmd 英数 Space SYS かな [トラボ] fn ← ↓ →
+ *   1: Mouse - トラックボールを動かすと自動で有効化
+ *   2: Fn    - fnキー押下中 (数字/ファンクション/記号/矢印 + トラックボールはスクロール)
+ *   3: Sys   - SYSキー押下中 (Bluetooth/リセット/メディア)
  */
 
 #include <behaviors.dtsi>
@@ -28,40 +32,40 @@
         base_layer {
             display-name = "Base";
             bindings = <
-&kp ESC    &kp Q     &kp W     &kp E      &kp R      &kp T        &kp Y      &kp U      &kp I      &kp O     &kp P      &kp BSPC
-&kp TAB    &kp A     &kp S     &kp D      &kp F      &kp G        &kp H      &kp J      &kp K      &kp L     &kp MINUS  &kp ENTER
-&kp LSHFT  &kp Z     &kp X     &kp C      &kp V      &kp B        &kp N      &kp M      &kp COMMA  &kp DOT   &kp UP     &kp RSHFT
-&kp LCTRL  &kp LALT  &kp LGUI  &kp LANG2  &kp SPACE  &mo SYS      &kp LANG1             &mo FN     &kp LEFT  &kp DOWN   &kp RIGHT
+&kp Q      &kp W     &kp E     &kp R      &kp T       &kp ESC     &kp BSPC    &kp Y      &kp U    &kp I      &kp O      &kp P
+&kp A      &kp S     &kp D     &kp F      &kp G       &kp TAB     &kp ENTER   &kp H      &kp J    &kp K      &kp L      &kp MINUS
+&kp Z      &kp X     &kp C     &kp V      &kp B       &kp LSHFT   &kp RSHFT   &kp N      &kp M    &kp COMMA  &kp DOT    &kp FSLH
+&kp LCTRL  &kp LALT  &kp LGUI  &mo SYS    &kp LANG2   &kp SPACE   &kp SPACE   &kp LANG1           &mo FN   &mkp LCLK  &mkp RCLK
             >;
         };
 
         mouse_layer {
             display-name = "Mouse";
             bindings = <
-&trans     &trans    &trans    &trans     &trans     &trans       &trans     &trans     &trans     &trans     &trans     &trans
-&trans     &trans    &trans    &trans     &trans     &trans       &trans     &trans     &trans     &trans     &trans     &trans
-&trans     &trans    &trans    &trans     &trans     &trans       &trans     &mkp RCLK  &mkp MCLK  &trans     &trans     &trans
-&trans     &trans    &trans    &trans     &trans     &trans       &mkp LCLK             &trans     &trans     &trans     &trans
+&trans     &trans    &trans    &trans     &trans      &trans      &trans      &trans     &trans   &trans     &trans     &trans
+&trans     &trans    &trans    &trans     &trans      &trans      &trans      &trans     &trans   &trans     &trans     &trans
+&trans     &trans    &trans    &trans     &trans      &trans      &trans      &trans     &trans   &trans     &trans     &trans
+&trans     &trans    &trans    &trans     &trans      &trans      &trans      &trans              &trans   &trans     &mkp MCLK
             >;
         };
 
         fn_layer {
             display-name = "Fn";
             bindings = <
-&kp GRAVE  &kp N1    &kp N2    &kp N3     &kp N4     &kp N5       &kp N6     &kp N7     &kp N8     &kp N9    &kp N0     &kp DEL
-&trans     &kp F1    &kp F2    &kp F3     &kp F4     &kp F5       &kp F6     &kp F7     &kp F8     &kp F9    &kp F10    &trans
-&trans     &kp F11   &kp F12   &kp EQUAL  &kp LBKT   &kp RBKT     &kp BSLH   &kp SEMI   &kp SQT    &kp FSLH  &kp PG_UP  &trans
-&trans     &trans    &trans    &trans     &trans     &trans       &trans                &trans     &kp HOME  &kp PG_DN  &kp END
+&kp N1     &kp N2    &kp N3    &kp N4     &kp N5      &kp GRAVE   &kp DEL     &kp N6     &kp N7   &kp N8     &kp N9     &kp N0
+&kp F1     &kp F2    &kp F3    &kp F4     &kp F5      &kp SEMI    &kp SQT     &kp F6     &kp F7   &kp F8     &kp F9     &kp F10
+&kp F11    &kp F12   &kp EQUAL &kp LBKT   &kp RBKT    &kp INT1    &kp INT3    &trans     &kp HOME &kp LEFT   &kp UP     &kp RIGHT
+&trans     &trans    &trans    &trans     &trans      &trans      &trans      &trans              &trans   &kp DOWN   &kp END
             >;
         };
 
         sys_layer {
             display-name = "Sys";
             bindings = <
-&bt BT_CLR   &bt BT_SEL 0 &bt BT_SEL 1 &bt BT_SEL 2 &bt BT_SEL 3 &bt BT_SEL 4  &none  &none       &none        &none         &none         &none
-&sys_reset   &bootloader  &out OUT_USB  &out OUT_BLE &out OUT_TOG &none         &none  &none       &none        &none         &none         &studio_unlock
-&trans       &none        &none         &none        &none        &none         &none  &kp C_MUTE  &kp C_VOL_DN &kp C_VOL_UP  &none         &trans
-&trans       &trans       &trans        &trans       &none        &trans        &none             &trans       &kp C_PREV    &kp C_MUTE    &kp C_NEXT
+&bt BT_SEL 0  &bt BT_SEL 1  &bt BT_SEL 2  &bt BT_SEL 3  &bt BT_SEL 4  &bt BT_CLR    &none         &none   &none       &none         &none         &none
+&sys_reset    &bootloader   &out OUT_USB  &out OUT_BLE  &out OUT_TOG  &none         &none         &none   &none       &none         &none         &studio_unlock
+&none         &none         &none         &none         &none         &none         &none         &none   &kp C_MUTE  &kp C_VOL_DN  &kp C_VOL_UP  &none
+&trans        &trans        &trans        &trans        &trans        &trans        &trans        &trans          &trans    &kp C_PREV    &kp C_NEXT
             >;
         };
     };
