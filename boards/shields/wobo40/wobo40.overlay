@@ -7,29 +7,33 @@
  *   行線を別の4本 (電気的な行4-7) にして列線を左ブロックと共用する。
  * - トラックボール: PAW3222 (SPI0, 3線SPI: MOSI/MISO同一ピン)
  *
- * ピンアサイン (回路図と一致):
- *   D0  (P0.02) : 電池電圧監視 ADC (AIN0) ※任意, ファーム未使用
- *   D1  (P0.03) : 行0
- *   D2  (P0.28) : 行1
- *   D3  (P0.29) : 行2
- *   D4  (P0.04) : PAW3222 SCLK
- *   D5  (P0.05) : PAW3222 SDIO
- *   D6  (P1.11) : PAW3222 nCS
- *   D7  (P1.12) : PAW3222 MOTION (割り込み)
- *   D8  (P1.13) : 行7
- *   D9  (P1.14) : 列0
- *   D10 (P1.15) : 列1
- *   --- 以下 Plus の裏面パッド ---
- *   D11 (P0.15) : 行3
- *   D12 (P0.19) : 行4
- *   D13 (P1.01) : 行5
- *   D14 (P0.09, NFC1) : 行6
- *   D15 (P0.10, NFC2) : 列3
- *   D16 (P0.31) : 使用禁止 (電池電圧測定用 AIN7_BAT)
- *   D17 (P1.03) : 列2
- *   D18 (P1.05) : 列4
- *   D19 (P1.07) : 列5
+ * ピンアサイン (回路図と一致 / PCB配線しやすいよう機能別・連番に整理):
  *
+ *   XIAO Plus 上辺 (左→右): 行8本 + ADC + トラボ3本
+ *     D0  (P0.02)        : 行0
+ *     D11 (P0.15)        : 行1
+ *     D1  (P0.03)        : 行2
+ *     D12 (P0.19)        : 行3
+ *     D2  (P0.28)        : 行4
+ *     D13 (P1.01)        : 行5
+ *     D3  (P0.29)        : 行6
+ *     D14 (P0.09, NFC1)  : 行7
+ *     D4  (P0.04, AIN2)  : 電池電圧監視 ADC ※任意, ファーム未使用
+ *     D15 (P0.10, NFC2)  : PAW3222 nCS
+ *     D5  (P0.05)        : PAW3222 SDIO
+ *     D16 (P0.31)        : 使用禁止 (電池電圧測定用 AIN7_BAT)
+ *     D6  (P1.11)        : PAW3222 SCLK
+ *
+ *   XIAO Plus 下辺 (左→右): 列6本 + MOTION
+ *     D10 (P1.15)        : 列0
+ *     D19 (P1.07)        : 列1
+ *     D9  (P1.14)        : 列2
+ *     D18 (P1.05)        : 列3
+ *     D8  (P1.13)        : 列4
+ *     D17 (P1.03)        : 列5
+ *     D7  (P1.12)        : PAW3222 MOTION (割り込み)
+ *
+ * NFCピン(D14/D15)は低速信号のみに使用。SPIクロックには使わない。
  * D8-D10 は SPI2(xiao_spi), D14/D15(NFC) を GPIO として使うため
  * spi2 無効化 + CONFIG_NFCT_PINS_AS_GPIOS=y が必要 (wobo40.conf)。
  */
@@ -50,23 +54,23 @@
 		wakeup-source;
 
 		row-gpios
-			= <&xiao_d 1 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>	/* 行0: D1  */
-			, <&xiao_d 2 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>	/* 行1: D2  */
-			, <&xiao_d 3 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>	/* 行2: D3  */
-			, <&gpio0 15 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>	/* 行3: D11 */
-			, <&gpio0 19 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>	/* 行4: D12 */
+			= <&xiao_d 0 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>	/* 行0: D0  */
+			, <&gpio0 15 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>	/* 行1: D11 */
+			, <&xiao_d 1 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>	/* 行2: D1  */
+			, <&gpio0 19 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>	/* 行3: D12 */
+			, <&xiao_d 2 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>	/* 行4: D2  */
 			, <&gpio1 1 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>	/* 行5: D13 */
-			, <&gpio0 9 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>	/* 行6: D14 (NFC1) */
-			, <&xiao_d 8 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>	/* 行7: D8  */
+			, <&xiao_d 3 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>	/* 行6: D3  */
+			, <&gpio0 9 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>	/* 行7: D14 (NFC1) */
 			;
 
 		col-gpios
-			= <&xiao_d 9 GPIO_ACTIVE_HIGH>	/* 列0: D9  */
-			, <&xiao_d 10 GPIO_ACTIVE_HIGH>	/* 列1: D10 */
-			, <&gpio1 3 GPIO_ACTIVE_HIGH>	/* 列2: D17 */
-			, <&gpio0 10 GPIO_ACTIVE_HIGH>	/* 列3: D15 (NFC2) */
-			, <&gpio1 5 GPIO_ACTIVE_HIGH>	/* 列4: D18 */
-			, <&gpio1 7 GPIO_ACTIVE_HIGH>	/* 列5: D19 */
+			= <&xiao_d 10 GPIO_ACTIVE_HIGH>	/* 列0: D10 */
+			, <&gpio1 7 GPIO_ACTIVE_HIGH>	/* 列1: D19 */
+			, <&xiao_d 9 GPIO_ACTIVE_HIGH>	/* 列2: D9  */
+			, <&gpio1 5 GPIO_ACTIVE_HIGH>	/* 列3: D18 */
+			, <&xiao_d 8 GPIO_ACTIVE_HIGH>	/* 列4: D8  */
+			, <&gpio1 3 GPIO_ACTIVE_HIGH>	/* 列5: D17 */
 			;
 	};
 
@@ -178,7 +182,7 @@ RC(3,0) RC(3,1) RC(3,2) RC(3,3) RC(3,4) RC(3,5) RC(7,0) RC(7,1)         RC(7,3) 
 	/* SPI0: PAW3222 (3線SPI: MOSI/MISO を SDIO ピンに束ねる) */
 	spi0_default: spi0_default {
 		group1 {
-			psels = <NRF_PSEL(SPIM_SCK, 0, 4)>,   /* D4 */
+			psels = <NRF_PSEL(SPIM_SCK, 1, 11)>,  /* D6 (SCLK) */
 				<NRF_PSEL(SPIM_MOSI, 0, 5)>,      /* D5 (SDIO) */
 				<NRF_PSEL(SPIM_MISO, 0, 5)>;      /* D5 (SDIO) */
 		};
@@ -186,7 +190,7 @@ RC(3,0) RC(3,1) RC(3,2) RC(3,3) RC(3,4) RC(3,5) RC(7,0) RC(7,1)         RC(7,3) 
 
 	spi0_sleep: spi0_sleep {
 		group1 {
-			psels = <NRF_PSEL(SPIM_SCK, 0, 4)>,
+			psels = <NRF_PSEL(SPIM_SCK, 1, 11)>,
 				<NRF_PSEL(SPIM_MOSI, 0, 5)>,
 				<NRF_PSEL(SPIM_MISO, 0, 5)>;
 			low-power-enable;
@@ -200,7 +204,7 @@ RC(3,0) RC(3,1) RC(3,2) RC(3,3) RC(3,4) RC(3,5) RC(7,0) RC(7,1)         RC(7,3) 
 	pinctrl-0 = <&spi0_default>;
 	pinctrl-1 = <&spi0_sleep>;
 	pinctrl-names = "default", "sleep";
-	cs-gpios = <&xiao_d 6 GPIO_ACTIVE_LOW>;
+	cs-gpios = <&gpio0 10 GPIO_ACTIVE_LOW>;	/* D15 (NFC2) */
 
 	trackball: trackball@0 {
 		status = "okay";
