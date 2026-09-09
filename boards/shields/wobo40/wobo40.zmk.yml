@@ -1,0 +1,9 @@
+file_format: "1"
+id: wobo40
+name: WoBo40
+type: shield
+url: https://github.com/malayan-tapir/WoBo40
+requires: [seeed_xiao]
+features:
+  - keys
+  - pointer

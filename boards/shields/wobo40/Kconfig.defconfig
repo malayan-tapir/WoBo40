@@ -1,0 +1,6 @@
+if SHIELD_WOBO40
+
+config ZMK_KEYBOARD_NAME
+	default "WoBo40"
+
+endif
