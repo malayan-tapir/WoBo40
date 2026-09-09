@@ -1,0 +1,5 @@
+(fp_lib_table
+  (version 7)
+  (lib (name "0_dya-kbd")(type "KiCad")(uri "${KIPRJMOD}/../lib/dya-kbd.pretty")(options "")(descr "DYA Dash 由来"))
+  (lib (name "0_Seeed_Studio_XIAO_Series")(type "KiCad")(uri "${KIPRJMOD}/../lib/Seeed_Studio_XIAO_Series.pretty")(options "")(descr "Seeed OPL"))
+)
